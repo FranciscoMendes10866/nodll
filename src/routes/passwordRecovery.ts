@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-export async function passwordRecoveryRoutes(app: FastifyInstance): Promise<void> {
+export async function passwordRecoveryRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   app.post("/request-recovery", {
     schema: {
       body: {
@@ -35,7 +37,9 @@ export async function passwordRecoveryRoutes(app: FastifyInstance): Promise<void
 
       await app.sendRecoveryEmail("user_email@provider.yolo", otp.code);
 
-      return reply.code(200).send({ result: "Password recovery sent successfully" });
+      return reply
+        .code(200)
+        .send({ result: "Password recovery code sent successfully" });
     },
   });
 
