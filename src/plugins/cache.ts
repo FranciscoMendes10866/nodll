@@ -2,13 +2,12 @@ import type { FastifyInstance } from "fastify";
 import NodeCache from "node-cache";
 
 const cache = new NodeCache({
-  stdTTL: 90, // 1m30s,
+  stdTTL: 240, // 4min,
   checkperiod: 120, // 2min
   deleteOnExpire: true,
-  maxKeys: 500,
 });
 
-export async function cachePlugin(app: FastifyInstance): Promise<void> {
+export default async function cachePlugin(app: FastifyInstance): Promise<void> {
   app.decorate("setCacheItem", ({ key, datum }) => {
     try {
       cache.set(key, JSON.stringify(datum));
@@ -45,7 +44,7 @@ type CacheItemDatum<T> = {
 declare module "fastify" {
   export interface FastifyInstance {
     setCacheItem: <T>(datum: CacheItemDatum<T>) => boolean;
-    getCacheItem: <T>(key: string) => CacheItemDatum<T> | null;
+    getCacheItem: <T>(key: string) => T | null;
     removeCacheItem: (key: string) => boolean;
   }
 }

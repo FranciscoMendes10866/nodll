@@ -1,8 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-export async function passwordRecoveryRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export default async function passwordRecoveryRoutes(app: FastifyInstance): Promise<void> {
   app.post("/request-recovery", {
     schema: {
       body: {
@@ -37,13 +35,11 @@ export async function passwordRecoveryRoutes(
 
       await app.sendRecoveryEmail("user_email@provider.yolo", otp.code);
 
-      return reply
-        .code(200)
-        .send({ result: "Password recovery code sent successfully" });
+      return reply.code(200).send({ result: "Password recovery code sent successfully" });
     },
   });
 
-  app.post("/reset-password", {
+  app.post("/request-reset", {
     schema: {
       body: {
         type: "object",
@@ -67,17 +63,19 @@ export async function passwordRecoveryRoutes(
     ) => {
       const { username, code } = request.body;
 
-      const value = app.getCacheItem<string>(btoa(username));
-      if (!value) {
+      const lookupKey = btoa(username);
+
+      const secret = app.getCacheItem<string>(lookupKey);
+      if (!secret) {
         throw new Error("OTP secret not found");
       }
 
-      const valid = app.validateOTP({ code, secret: value.datum });
+      app.removeCacheItem(lookupKey);
+
+      const valid = app.validateOTP({ code, secret });
       if (!valid) {
         throw new Error("Invalid OTP");
       }
-
-      app.removeCacheItem(username);
 
       // FYK: Now the newPassword would be saved to the database
 

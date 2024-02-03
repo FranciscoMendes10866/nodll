@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   ignoreTLS: true,
 });
 
-export async function mailerPlugin(app: FastifyInstance): Promise<void> {
+export default async function mailerPlugin(app: FastifyInstance): Promise<void> {
   app.decorate("sendRecoveryEmail", async (to, passcode) => {
     return new Promise((resolve, reject) => {
       transporter.sendMail(

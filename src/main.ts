@@ -1,24 +1,35 @@
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import autoLoad from "@fastify/autoload";
 import closeWithGrace from "close-with-grace";
 import Fastify from "fastify";
 
-import { cachePlugin } from "./plugins/cache";
-import { mailerPlugin } from "./plugins/mailer";
-import { otpPlugin } from "./plugins/otp";
-import { passwordRecoveryRoutes } from "./routes/passwordRecovery";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const app = Fastify();
+async function main() {
+  const app = Fastify();
 
-app.register(cachePlugin);
-app.register(mailerPlugin);
-app.register(otpPlugin);
-app.register(passwordRecoveryRoutes);
+  await app.register(autoLoad, {
+    dir: join(__dirname, "plugins"),
+    encapsulate: false,
+  });
 
-app.listen({ port: 3333 });
+  await app.register(autoLoad, {
+    dir: join(__dirname, "routes"),
+    encapsulate: false,
+    maxDepth: 1,
+  });
 
-closeWithGrace(async ({ err }) => {
-  if (err) {
-    app.log.error({ err }, "Unexpected error encountered. Please check the logs for details.");
-  }
-  app.log.info("Shutting down gracefully.");
-  await app.close();
-});
+  await app.listen({ port: 3333 });
+
+  closeWithGrace(async ({ err }) => {
+    if (err) {
+      app.log.error({ err }, "Unexpected error encountered. Please check the logs for details.");
+    }
+    app.log.info("Shutting down gracefully.");
+    await app.close();
+  });
+}
+
+void main();
