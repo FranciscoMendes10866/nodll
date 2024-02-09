@@ -46,9 +46,10 @@ export default async function passwordRecoveryRoutes(app: FastifyInstance): Prom
         properties: {
           username: { type: "string" },
           code: { type: "string" },
+          oldPassword: { type: "string" },
           newPassword: { type: "string" },
         },
-        required: ["username", "code", "newPassword"],
+        required: ["username", "code", "oldPassword", "newPassword"],
       },
     },
     handler: async (
@@ -56,12 +57,15 @@ export default async function passwordRecoveryRoutes(app: FastifyInstance): Prom
         Body: {
           username: string;
           code: string;
+          oldPassword: string;
           newPassword: string;
         };
       }>,
       reply: FastifyReply,
     ) => {
       const { username, code } = request.body;
+
+      // FYK: Now we would check if the hash of the (stored) password matches the oldPassword
 
       const lookupKey = btoa(username);
 
